@@ -27,11 +27,11 @@ def scan_block_hash(hash):
 
 def scan_tx_id(txid):
     tx = host.call('getrawtransaction', txid, True)
-    for inp in tx['vin']:
+    for ndx, inp in enumerate(tx['vin']):
         if 'txinwitness' in inp:
             asms = scan_txinwitness(inp['txinwitness'])
             if asms:
-                print('%s:\n%s' % (txid, asms))
+                print('%s input %d\n%s' % (txid, ndx, asms))
 
 def scan_txinwitness(txinwitness):
     # Use the last witness slot
