@@ -2,6 +2,7 @@
 
 import os
 import sys
+import threading
 
 from rpchost import RPCHost
 
@@ -121,9 +122,24 @@ def block_height(blockhash):
     blk = host.call('getblock', blockhash)
     return blk['height']
 
-if __name__ == '__main__':
-    blockheight = 532590
-    blockheight = 532446
+lock = threading.Lock()
+blockheight = 532590
+blockheight = 532446
+
+def scan_thread():
+    global lock, blockheight
     while True:
+        with lock:
+            bh = blockheight
+            blockheight += 1
         scan_block_height(blockheight)
-        blockheight += 1
+
+if __name__ == '__main__':
+
+    threads = []
+    for ndx in range(0, 10):
+        thrd = threading.Thread(target=scan_thread)
+        thrd.start()
+        threads.append(thrd)
+
+    threads[0].join()
