@@ -125,6 +125,7 @@ def block_height(blockhash):
 lock = threading.Lock()
 blockheight = 532590
 blockheight = 532446
+blockheight = 548258 # 11/1/2018, 12:01:22 AM PDT
 
 def scan_thread():
     global lock, blockheight
