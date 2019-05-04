@@ -106,6 +106,7 @@ def match_unilateral_txinwitness(tx, inp):
         ext = '%d < %d' % (block1 - block0, delta)
         if block1 - block0 < delta:
             print('    REMEDY: %s %s' % (tx['txid'], ext))
+            sys.exit(0)
         else:
             print('UNILATERAL: %s %s' % (tx['txid'], ext))
         return asms
