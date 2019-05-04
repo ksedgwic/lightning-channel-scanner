@@ -38,7 +38,8 @@ def scan_tx_id(txid):
         asms = match_multisig_txinwitness(inp['txinwitness'])
         if asms:
             if tx['locktime'] == 0 and inp['sequence'] == 0xffffffff:
-                print('    MUTUAL: %s' % (tx['txid'],))
+                # print('    MUTUAL: %s' % (tx['txid'],))
+                pass
             elif tx['locktime'] != 0 and inp['sequence'] != 0xffffffff:
                 print('COMMITMENT: %s' % (tx['txid']))
 
