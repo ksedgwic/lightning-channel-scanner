@@ -101,15 +101,15 @@ def match_unilateral_txinwitness(tx, inp):
        and asms[8] == 'OP_CHECKSIG':
 
         # Is this inside the CSV window?
-        delta = int(asms[3])
+        lockblocks = int(asms[3])
         block0 = tx_height(inp['txid'])
         block1 = block_height(tx['blockhash'])
-        ext = '%d < %d' % (block1 - block0, delta)
-        if block1 - block0 < delta:
-            print('    REMEDY: %s %s' % (tx['txid'], ext))
+        delta = block1 - block0 - lockblocks
+        if block1 - block0 < lockblocks:
+            print('    REMEDY: %s %d' % (tx['txid'], delta))
             sys.exit(0)
         else:
-            print('UNILATERAL: %s %s' % (tx['txid'], ext))
+            print('UNILATERAL: %s %d' % (tx['txid'], delta))
         return asms
     
     return None
