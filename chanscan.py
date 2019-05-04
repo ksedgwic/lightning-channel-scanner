@@ -100,16 +100,16 @@ def match_unilateral_txinwitness(tx, inp):
        and asms[7] == 'OP_ENDIF' \
        and asms[8] == 'OP_CHECKSIG':
 
-        # Is this inside the CSV window?
         lockblocks = int(asms[3])
         block0 = tx_height(inp['txid'])
         block1 = block_height(tx['blockhash'])
-        delta = block1 - block0 - lockblocks
-        if block1 - block0 < lockblocks:
-            print('    REMEDY: %s %d' % (tx['txid'], delta))
-            sys.exit(0)
+        delta = block1 - block0
+        
+        # Check the witness args to see if this is a REMEDY
+        if txinwitness[1]:
+            print('    REMEDY: %s %d %d' % (tx['txid'], lockblocks, delta))
         else:
-            print('UNILATERAL: %s %d' % (tx['txid'], delta))
+            print('UNILATERAL: %s %d %d' % (tx['txid'], lockblocks, delta))
         return asms
     
     return None
@@ -126,6 +126,7 @@ lock = threading.Lock()
 blockheight = 532590
 blockheight = 532446
 blockheight = 548258 # 11/1/2018, 12:01:22 AM PDT
+blockheight = 557930 # shortly before REMEDY
 
 def scan_thread():
     global lock, blockheight
@@ -143,4 +144,5 @@ if __name__ == '__main__':
         thrd.start()
         threads.append(thrd)
 
-    threads[0].join()
+    for thrd in threads:
+        thrd.join()
