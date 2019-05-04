@@ -2,6 +2,7 @@
 
 import os
 import sys
+from datetime import datetime
 import threading
 
 from rpchost import RPCHost
@@ -16,7 +17,7 @@ url = 'http://' + rpc_user + ':' + rpc_pass + '@localhost:' + str(rpc_port)
 host = RPCHost(url)
 
 def scan_block_height(height):
-    print(height)
+    # print(height)
     hash = host.call('getblockhash', height)
     return scan_block_hash(hash)
 
@@ -32,6 +33,7 @@ def scan_tx_id(txid):
     if is_unilateral_close(tx):
         return
 
+    # Not interested in MUTUAL or COMMITMENT at this point.
     return
     
     if len(tx['vin']) != 1:
@@ -101,15 +103,20 @@ def match_unilateral_txinwitness(tx, inp):
        and asms[8] == 'OP_CHECKSIG':
 
         lockblocks = int(asms[3])
-        block0 = tx_height(inp['txid'])
-        block1 = block_height(tx['blockhash'])
+        block0, tstamp0 = tx_height(inp['txid'])
+        block1, tstamp1 = block_height(tx['blockhash'])
         delta = block1 - block0
+
+        tstamp_str = datetime.utcfromtimestamp(tstamp1).strftime('%Y-%m-%d %H:%M:%S')
         
         # Check the witness args to see if this is a REMEDY
         if txinwitness[1]:
-            print('    REMEDY: %s %d %d' % (tx['txid'], lockblocks, delta))
+            typestr = "REMEDY    "
         else:
-            print('UNILATERAL: %s %d %d' % (tx['txid'], lockblocks, delta))
+            typestr = "UNILATERAL"
+            
+        print('%d %s %d %s %s %d %d' % (
+            tstamp1, tstamp_str, block1, typestr, tx['txid'], lockblocks, delta))
         return asms
     
     return None
@@ -120,7 +127,7 @@ def tx_height(txid):
 
 def block_height(blockhash):
     blk = host.call('getblock', blockhash)
-    return blk['height']
+    return blk['height'], blk['time']
 
 lock = threading.Lock()
 blockheight = 532590
