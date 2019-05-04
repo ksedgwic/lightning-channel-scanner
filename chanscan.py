@@ -103,10 +103,11 @@ def match_unilateral_txinwitness(tx, inp):
         delta = int(asms[3])
         block0 = tx_height(inp['txid'])
         block1 = block_height(tx['blockhash'])
+        ext = '%d < %d' % (block1 - block0, delta)
         if block1 - block0 < delta:
-            print('    REMEDY: %s' % (tx['txid'],))
+            print('    REMEDY: %s %s' % (tx['txid'], ext))
         else:
-            print('UNILATERAL: %s' % (tx['txid'],))
+            print('UNILATERAL: %s %s' % (tx['txid'], ext))
         return asms
     
     return None
