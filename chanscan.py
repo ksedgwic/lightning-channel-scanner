@@ -98,6 +98,7 @@ blockheight = 532590
 blockheight = 532446
 blockheight = 548258 # 11/1/2018, 12:01:22 AM PDT
 blockheight = 557930 # shortly before REMEDY
+blockheight = 502000 # Jan 1 2018
 
 def scan_thread():
     global lock, blockheight
