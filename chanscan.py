@@ -31,6 +31,8 @@ def scan_tx_id(txid):
     if is_unilateral_close(tx):
         return
 
+    return
+    
     if len(tx['vin']) != 1:
         return False
     inp = tx['vin'][0]
@@ -47,9 +49,8 @@ def scan_tx_id(txid):
 def is_unilateral_close(tx):
     for ndx, inp in enumerate(tx['vin']):
         if 'txinwitness' in inp:
-            asms = match_unilateral_txinwitness(inp['txinwitness'])
+            asms = match_unilateral_txinwitness(tx, inp['txinwitness'])
             if asms:
-                print('UNILATERAL: %s' % (tx['txid'],))
                 return True
     return False
 
@@ -73,7 +74,7 @@ def match_multisig_txinwitness(txinwitness):
     
     return None
 
-def match_unilateral_txinwitness(txinwitness):
+def match_unilateral_txinwitness(tx, txinwitness):
     # Use the last witness slot
     script = txinwitness[-1]
     decoded = host.call('decodescript', script)
@@ -96,6 +97,7 @@ def match_unilateral_txinwitness(txinwitness):
        and asms[5] == 'OP_DROP' \
        and asms[7] == 'OP_ENDIF' \
        and asms[8] == 'OP_CHECKSIG':
+        print('UNILATERAL: %s %s' % (tx['txid'], txinwitness[0:-1]))
         return asms
     
     return None
