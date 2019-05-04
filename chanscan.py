@@ -27,13 +27,52 @@ def scan_block_hash(hash):
 
 def scan_tx_id(txid):
     tx = host.call('getrawtransaction', txid, True)
+    
+    if is_unilateral_close(tx):
+        return
+
+    if len(tx['vin']) != 1:
+        return False
+    inp = tx['vin'][0]
+    if 'txinwitness' in inp:
+        asms = match_multisig_txinwitness(inp['txinwitness'])
+        if asms:
+            if tx['locktime'] == 0 and inp['sequence'] == 0xffffffff:
+                print('    MUTUAL: %s' % (tx['txid'],))
+            elif tx['locktime'] != 0 and inp['sequence'] != 0xffffffff:
+                print('COMMITMENT: %s' % (tx['txid']))
+
+# This is the delayed redemption
+def is_unilateral_close(tx):
     for ndx, inp in enumerate(tx['vin']):
         if 'txinwitness' in inp:
-            asms = scan_txinwitness(inp['txinwitness'])
+            asms = match_unilateral_txinwitness(inp['txinwitness'])
             if asms:
-                print('%s input %d\n%s' % (txid, ndx, asms))
+                print('UNILATERAL: %s' % (tx['txid'],))
+                return True
+    return False
 
-def scan_txinwitness(txinwitness):
+def match_multisig_txinwitness(txinwitness):
+    # Use the last witness slot
+    script = txinwitness[-1]
+    decoded = host.call('decodescript', script)
+    asms = decoded['asm'].split()
+
+    # 2
+    # 03bb196b1967a6ae56040f5ab67ec1185c90c122882f35f977b338f4ec0c8743bd
+    # 03dc71022efb8936a3bc852380ff6bc59d6790d070f3a886cb4223812cc1d990fb
+    # 2
+    # OP_CHECKMULTISIG",
+
+    if len(asms) == 5 \
+       and asms[0] == '2' \
+       and asms[3] == '2' \
+       and asms[4] == 'OP_CHECKMULTISIG':
+        return asms
+    
+    return None
+
+def match_unilateral_txinwitness(txinwitness):
     # Use the last witness slot
     script = txinwitness[-1]
     decoded = host.call('decodescript', script)
@@ -62,6 +101,7 @@ def scan_txinwitness(txinwitness):
 
 if __name__ == '__main__':
     blockheight = 532590
+    blockheight = 532446
     while True:
         scan_block_height(blockheight)
         blockheight += 1
