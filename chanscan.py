@@ -49,7 +49,7 @@ def scan_tx_id(txid):
 def is_unilateral_close(tx):
     for ndx, inp in enumerate(tx['vin']):
         if 'txinwitness' in inp:
-            asms = match_unilateral_txinwitness(tx, inp['txinwitness'])
+            asms = match_unilateral_txinwitness(tx, inp)
             if asms:
                 return True
     return False
@@ -74,7 +74,8 @@ def match_multisig_txinwitness(txinwitness):
     
     return None
 
-def match_unilateral_txinwitness(tx, txinwitness):
+def match_unilateral_txinwitness(tx, inp):
+    txinwitness = inp['txinwitness']
     # Use the last witness slot
     script = txinwitness[-1]
     decoded = host.call('decodescript', script)
@@ -97,10 +98,26 @@ def match_unilateral_txinwitness(tx, txinwitness):
        and asms[5] == 'OP_DROP' \
        and asms[7] == 'OP_ENDIF' \
        and asms[8] == 'OP_CHECKSIG':
-        print('UNILATERAL: %s %s' % (tx['txid'], txinwitness[0:-1]))
+
+        # Is this inside the CSV window?
+        delta = int(asms[3])
+        block0 = tx_height(inp['txid'])
+        block1 = block_height(tx['blockhash'])
+        if block1 - block0 < delta:
+            print('    REMEDY: %s' % (tx['txid'],))
+        else:
+            print('UNILATERAL: %s' % (tx['txid'],))
         return asms
     
     return None
+
+def tx_height(txid):
+    tx = host.call('getrawtransaction', txid, True)
+    return block_height(tx['blockhash'])
+
+def block_height(blockhash):
+    blk = host.call('getblock', blockhash)
+    return blk['height']
 
 if __name__ == '__main__':
     blockheight = 532590
