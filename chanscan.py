@@ -99,6 +99,8 @@ blockheight = 532446
 blockheight = 548258 # 11/1/2018, 12:01:22 AM PDT
 blockheight = 557930 # shortly before REMEDY
 blockheight = 502000 # Jan 1 2018
+blockheight = 575018
+blockheight = 575010
 
 def scan_thread():
     global lock, blockheight
@@ -111,7 +113,7 @@ def scan_thread():
 if __name__ == '__main__':
 
     threads = []
-    for ndx in range(0, 10):
+    for ndx in range(0, 1):
         thrd = threading.Thread(target=scan_thread)
         thrd.start()
         threads.append(thrd)
